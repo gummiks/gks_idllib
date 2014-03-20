@@ -1,4 +1,4 @@
-FUNCTION logpartfunc, nameElement, evaltheta, LISTITEMS=items, DOPLOT=plotting, USETEMPLATE=template
+FUNCTION logpartfunc, nameElement, evaltheta, LISTITEMS=items, DOPLOT=plotting, USETEMPLATE=template, VERBOSE=verb
 	;+
 	; NAME:
 	;	logpartfunc()
@@ -21,6 +21,7 @@ FUNCTION logpartfunc, nameElement, evaltheta, LISTITEMS=items, DOPLOT=plotting, 
 	;	DOPLOT		Plot the log(u(T)), along with the intepolation curve
 	;	USETEMPLATE     Use a working ascii_template, saved before - so 
 	;                       you don't have to interactively set it all the time
+	;	VERBOSE		Print out 'Element found' if it is found
 	;
 	; OUTPUT PARAMETERS:
 	;	res	  	The logarithm of the partition function for a **nameElement** at **evaltheta**
@@ -40,16 +41,16 @@ FUNCTION logpartfunc, nameElement, evaltheta, LISTITEMS=items, DOPLOT=plotting, 
 	; Filename of including the data used for interpolation
 
 	;Current directory
-	;name_p_nAndv = 'p_nAndv.txt' 
+	name_p_nAndv = 'p_nAndv.txt' 
 	;Full directory path
-	name_p_nAndv = '/astro/grads/gws5257/idl/gklib/p_nAndv.txt'
+	;name_p_nAndv = '/astro/grads/gws5257/idl/gks_idllib/p_nAndv.txt'
 
 
 	IF KEYWORD_SET(template) THEN BEGIN
 		;Working dir
-		;RESTORE, 'logpartTemplate.sav'
+		RESTORE, 'logpartTemplate.sav'
 		;Full path
-		RESTORE, '/astro/grads/gws5257/idl/gklib/logpartTemplate.sav'
+		;RESTORE, '/astro/grads/gws5257/idl/gks_idllib/logpartTemplate.sav'
 	ENDIF ELSE BEGIN
 		logpartTemplate = ascii_template(name_p_nAndv, browse_lines=1)
 		SAVE, logpartTemplate, FILENAME='logpartTemplate.sav'
@@ -66,8 +67,11 @@ FUNCTION logpartfunc, nameElement, evaltheta, LISTITEMS=items, DOPLOT=plotting, 
 	elem_index = WHERE(elements EQ nameElement)
 	IF elem_index EQ -1 THEN BEGIN
 		print, 'Element not found'
+		STOP;
 	ENDIF ELSE BEGIN
-		print, 'Element found'
+		IF KEYWORD_SET(verb) THEN BEGIN
+			print, 'Element found'
+		ENDIF
 		theta = linspace(0.2D, 2.0D, 10.0D)
 		logUval = [data.field02[elem_index],$ 
 	                   data.field03[elem_index],$
@@ -94,7 +98,6 @@ FUNCTION logpartfunc, nameElement, evaltheta, LISTITEMS=items, DOPLOT=plotting, 
 				Aspect=2./3, XTitle=xstr, YTitle=ystr, charsize=2 , /Overplot, /addcmd
 		ENDIF
 	ENDELSE
-
 	RETURN, eval
 END
 
